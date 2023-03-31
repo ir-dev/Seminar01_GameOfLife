@@ -55,7 +55,7 @@ class GameOfLifeApp:
                 cell_map = [[random_bits[y * cells_num_x + x] for x in range_x] for y in range_y]
         return cell_map
 
-    def detect_grid_scaling(self):
+    def apply_grid_scaling(self):
         window_size = self.window_surface.get_size()
         window_width, window_height = window_size
         cells_num_x = window_width // CELL_SIZE
@@ -63,8 +63,24 @@ class GameOfLifeApp:
         actual_cells_num_x = len(self.cell_map[0])
         actual_cells_num_y = len(self.cell_map)
         if cells_num_x != actual_cells_num_x or cells_num_y != actual_cells_num_y:
-            # TODO: reuse existing cell_map and only add/remove rows/columns
-            self.reset(self.get_cell_map(CELL_MAP_PRESET_DEFAULT))
+            # scale the grid depending on the delta of cell nums (delta < 0: remove rows/columns, delta > 0: add rows/columns)
+            cells_delta_x = cells_num_x - actual_cells_num_x
+            cells_delta_y = cells_num_y - actual_cells_num_y
+            if cells_delta_x < 0:
+                for row in self.cell_map:
+                    for _ in range(cells_delta_x * -1):
+                        row.pop()
+            elif cells_delta_x > 0:
+                for row in self.cell_map:
+                    for _ in range(cells_delta_x):
+                        row.append(0)
+            if cells_delta_y < 0:
+                for _ in range(cells_delta_y * -1):
+                    self.cell_map.pop()
+            elif cells_delta_y > 0:
+                for _ in range(cells_delta_y):
+                    self.cell_map.append([0 for _ in range(cells_num_x)])
+            self.reset(self.cell_map)
 
     def process_events(self):
         def is_cell_collision(point):
@@ -227,7 +243,7 @@ class GameOfLifeApp:
             dt = self.clock.tick(FPS) / 1000.0
 
             self.process_events()
-            self.detect_grid_scaling()
+            self.apply_grid_scaling()
 
             # game logic
             window_size = self.window_surface.get_size()
