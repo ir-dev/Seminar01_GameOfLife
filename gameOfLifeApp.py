@@ -148,14 +148,6 @@ class GameOfLifeApp:
                         case pygame.K_RIGHT:
                             # TODO: increase step speed (range 1-100 means 1s-1/100s)
                             pass
-                        # increase grid size
-                        case pygame.K_UP:
-                            # TODO: probably overkill.. but would be fancy if the grid would scale on key press (actually should be simple by just setting the window dimensions). use an appropriate range
-                            pass
-                        # decrease grid size
-                        case pygame.K_DOWN:
-                            # TODO: probably overkill.. but would be fancy if the grid would scale on key press (actually should be simple by just setting the window dimensions). use an appropriate range
-                            pass
                 case pygame.MOUSEBUTTONDOWN:
                     self.dragging = True
                     self.modified_cell_rects = []
