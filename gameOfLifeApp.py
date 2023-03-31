@@ -173,8 +173,9 @@ class GameOfLifeApp:
     def simulate_map(cell_map):
         cells_num_x = len(cell_map[0])
         cells_num_y = len(cell_map)
-        # TODO: use 2 line buffers instead of copying the whole map; modify the cell_map in-place without returning a new map
-        new_cell_map = [[0 for x in range(cells_num_x)] for y in range(cells_num_y)]
+
+        last_row = [0] * cells_num_x
+        curr_row = [0] * cells_num_x
 
         for y in range(cells_num_y):
             for x in range(cells_num_x):
@@ -197,17 +198,22 @@ class GameOfLifeApp:
                 neighbours_sum = sum(neighbours)
                 # Reproduction/birth of a cell: If a dead cell has exactly three living neighbors, the cell is alive in the next generation step
                 if not own_active and neighbours_sum == 3:
-                    new_cell_map[y][x] = 1
+                    curr_row[x] = 1
                 # Death by overpopulation: If a living cell has more than three neighbors, the cell dies
                 elif own_active and neighbours_sum > 3:
-                    new_cell_map[y][x] = 0
+                    curr_row[x] = 0
                 # Dead due to missing neighbors: If a living cell has less than two neighbors, the cell dies
                 elif own_active and neighbours_sum < 2:
-                    new_cell_map[y][x] = 0
+                    curr_row[x] = 0
                 # Survival: If a living cell has two or three neighbors, the cell remains alive
                 elif own_active and neighbours_sum in [2, 3]:
-                    new_cell_map[y][x] = 1
-        return new_cell_map
+                    curr_row[x] = 1
+
+            if y > 0:
+                cell_map[y-1] = last_row.copy()
+            if y == cells_num_y - 1:
+                cell_map[y] = curr_row.copy()
+            last_row, curr_row = curr_row, [0] * cells_num_x
 
     @ staticmethod
     def get_cell_map_surface(cell_map, cell_size):
@@ -249,7 +255,7 @@ class GameOfLifeApp:
             if not self.paused:
                 dt_simulation += dt
                 if dt_simulation >= 1 / self.simulation_speed:
-                    self.cell_map = self.simulate_map(self.cell_map)
+                    self.simulate_map(self.cell_map)
                     self.simulation_step += 1
                     dt_simulation = 0
                     # TODO: verify after some generations if the game is in a stable/static or empty state (no more changes) (stop the simulation then) or if the world is changing (keep simulating)
