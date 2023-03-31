@@ -7,6 +7,9 @@ from cellMapPreset import CellMapPreset
 
 
 WINDOW_INITIAL_SIZE = (1280, 720)
+SIMULATION_INITIAL_SPEED = 10
+SIMULATION_MIN_SPEED = 1
+SIMULATION_MAX_SPEED = 1000
 FPS = 60.0
 CELL_SIZE = 10
 CELL_MAP_PRESET_DEFAULT = CellMapPreset.EMPTY
@@ -17,13 +20,16 @@ class GameOfLifeApp:
         BABY_YELLOW = (0xFF, 0xFC, 0xC9)
         DARK_GRAY = (0x20, 0x20, 0x20)
         DEEP_DARK_BLUE = (0x0B, 0x0D, 0x2A)
+        WHITE = (0xFF, 0xFF, 0xFF)
 
     def __init__(self):
         pygame.init()
         pygame.display.set_caption("John Conway's Game of Life")
 
+        self.font = pygame.font.SysFont('monospace', 16)
         self.window_surface = pygame.display.set_mode(WINDOW_INITIAL_SIZE, pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
+        self.simulation_speed = SIMULATION_INITIAL_SPEED
         self.reset()
 
     def reset(self, initial_configuration=None):
@@ -38,6 +44,7 @@ class GameOfLifeApp:
         self.cell_map = initial_configuration
         # will be drawn in game loop
         self.cell_map_surface = None
+        self.simulation_step = 0
 
     def get_cell_map(self, cell_map_preset: CellMapPreset = CellMapPreset.EMPTY):
         window_size = self.window_surface.get_size()
@@ -140,14 +147,12 @@ class GameOfLifeApp:
                         case pygame.K_l:
                             # TODO: load game state
                             pass
-                        # decrease step speed
+                        # decrease step speed (1 means 1 step per 1s)
                         case pygame.K_LEFT:
-                            # TODO: decrease step speed (range 1-100 means 1s-1/100s)
-                            pass
-                        # increase step speed
+                            self.simulation_speed = max(SIMULATION_MIN_SPEED, self.simulation_speed - 1)
+                        # increase step speed (1 means 1 step per 1s)
                         case pygame.K_RIGHT:
-                            # TODO: increase step speed (range 1-100 means 1s-1/100s)
-                            pass
+                            self.simulation_speed = min(SIMULATION_MAX_SPEED, self.simulation_speed + 1)
                 case pygame.MOUSEBUTTONDOWN:
                     self.dragging = True
                     self.modified_cell_rects = []
@@ -231,6 +236,7 @@ class GameOfLifeApp:
     def run(self):
         self.running = True
         self.paused = True
+        dt_simulation = 0
         while self.running:
             dt = self.clock.tick(FPS) / 1000.0
 
@@ -239,9 +245,16 @@ class GameOfLifeApp:
 
             # game logic
             window_size = self.window_surface.get_size()
+            window_width, window_height = window_size
             if not self.paused:
-                self.cell_map = self.simulate_map(self.cell_map)
-                # TODO: verify after some generations if the game is in a stable/static or empty state (no more changes) (stop the simulation then) or if the world is changing (keep simulating)
+                dt_simulation += dt
+                if dt_simulation >= 1 / self.simulation_speed:
+                    self.cell_map = self.simulate_map(self.cell_map)
+                    self.simulation_step += 1
+                    dt_simulation = 0
+                    # TODO: verify after some generations if the game is in a stable/static or empty state (no more changes) (stop the simulation then) or if the world is changing (keep simulating)
+            else:
+                dt_simulation = 0
 
             # draw graphics
             background_surface = pygame.Surface(window_size)
@@ -251,6 +264,13 @@ class GameOfLifeApp:
             self.window_surface.blit(background_surface, (0, 0))
             self.window_surface.blit(cell_map_surface, (0, 0))
 
-            # TODO: draw some text labels on the screen to show some infos of the game (steps, fps, paused etc.)
+            paused = "PAUSED " if self.paused else ""
+            fps = self.clock.get_fps()
+            status_text = "{}Steps: {} Speed: {} FPS: {:.0f}".format(
+                paused, self.simulation_step, self.simulation_speed, fps)
+            status_text_surface = self.font.render(status_text, True, self.Color.WHITE.value)
+            self.window_surface.blit(status_text_surface, (0, window_height - status_text_surface.get_height()))
 
             pygame.display.flip()
+        pygame.freetype.quit()
+        pygame.quit()
