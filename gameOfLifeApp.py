@@ -119,27 +119,27 @@ class GameOfLifeApp:
                             self.reset(self.get_cell_map(CellMapPreset.RANDOM))
                         # save
                         case pygame.K_s:
-                            # TODO
+                            # TODO: save game state and use appropriate data structure
                             pass
                         # load
                         case pygame.K_l:
-                            # TODO
+                            # TODO: load game state
                             pass
                         # decrease step speed
                         case pygame.K_LEFT:
-                            # TODO
+                            # TODO: decrease step speed (range 1-100 means 1s-1/100s)
                             pass
                         # increase step speed
                         case pygame.K_RIGHT:
-                            # TODO
+                            # TODO: increase step speed (range 1-100 means 1s-1/100s)
                             pass
                         # increase grid size
                         case pygame.K_UP:
-                            # TODO
+                            # TODO: probably overkill.. but would be fancy if the grid would scale on key press (actually should be simple by just setting the window dimensions). use an appropriate range
                             pass
                         # decrease grid size
                         case pygame.K_DOWN:
-                            # TODO
+                            # TODO: probably overkill.. but would be fancy if the grid would scale on key press (actually should be simple by just setting the window dimensions). use an appropriate range
                             pass
                 case pygame.MOUSEBUTTONDOWN:
                     self.dragging = True
@@ -234,6 +234,7 @@ class GameOfLifeApp:
             window_size = self.window_surface.get_size()
             if not self.paused:
                 self.cell_map = self.simulate_map(self.cell_map)
+                # TODO: verify after some generations if the game is in a stable/static or empty state (no more changes) (stop the simulation then) or if the world is changing (keep simulating)
 
             # draw graphics
             background_surface = pygame.Surface(window_size)
@@ -242,5 +243,7 @@ class GameOfLifeApp:
 
             self.window_surface.blit(background_surface, (0, 0))
             self.window_surface.blit(cell_map_surface, (0, 0))
+
+            # TODO: draw some text labels on the screen to show some infos of the game (steps, fps, paused etc.)
 
             pygame.display.flip()
