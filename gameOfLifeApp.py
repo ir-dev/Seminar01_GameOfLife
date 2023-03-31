@@ -54,7 +54,6 @@ class GameOfLifeApp:
                 random_bits = [(b >> i) & 1 for b in urandom(required_random_bytes) for i in range(8)]
                 cell_map = [[random_bits[y * cells_num_x + x] for x in range_x] for y in range_y]
         return cell_map
-        return len(self.cell_map)
 
     def detect_grid_scaling(self):
         window_size = self.window_surface.get_size()
