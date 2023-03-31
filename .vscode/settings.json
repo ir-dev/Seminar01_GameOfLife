@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.formatting.autopep8Args": [
+    "--max-line-length",
+    "120"
+  ]
+}
