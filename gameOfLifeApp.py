@@ -186,9 +186,9 @@ class GameOfLifeApp:
                     upper_neighbours[x-1] if x > 0 else 0,
                     upper_neighbours[x],
                     upper_neighbours[x+1] if x < cells_num_x - 1 else 0,
-                    mid_neighbours[x-1] if x >= 0 else True,
+                    mid_neighbours[x-1] if x > 0 else 0,
                     mid_neighbours[x+1] if x < cells_num_x - 1 else 0,
-                    lower_neighbours[x-1] if x >= 0 else True,
+                    lower_neighbours[x-1] if x > 0 else 0,
                     lower_neighbours[x],
                     lower_neighbours[x+1] if x < cells_num_x - 1 else 0
                 ]
