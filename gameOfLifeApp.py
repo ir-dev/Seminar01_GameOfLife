@@ -7,6 +7,7 @@ from cellMapGenerator import CellMapGenerator, CellMapPreset
 
 WINDOW_INITIAL_SIZE = (1280, 720)
 SIMULATION_INITIAL_SPEED = 30
+SIMULATION_STOP_SIGNAL_CHECK_STEP = 1000
 SIMULATION_MIN_SPEED = 1
 SIMULATION_MAX_SPEED = 1000
 FPS = 60.0
@@ -20,6 +21,11 @@ class GameOfLifeApp:
         DARK_GRAY = (0x20, 0x20, 0x20)
         DEEP_DARK_BLUE = (0x0B, 0x0D, 0x2A)
         WHITE = (0xFF, 0xFF, 0xFF)
+
+    class SimulationState(Enum):
+        CHANGING = 0
+        EMPTY = 1
+        STABLE = 2
 
     def __init__(self):
         pygame.init()
@@ -244,6 +250,18 @@ class GameOfLifeApp:
                 cell_map_surface.blit(cell_surface, (x * CELL_SIZE, y * CELL_SIZE))
         return cell_map_surface
 
+    @ staticmethod
+    def determine_simulation_state(cell_map):
+        if (sum(sum(y) for y in cell_map) == 0):
+            return GameOfLifeApp.SimulationState.EMPTY
+        cell_map_next = cell_map.copy()
+        GameOfLifeApp.simulate_map(cell_map_next)
+        # NOTE: the stable check could be more nuanced by checking for stable patterns
+        if cell_map == cell_map_next:
+            return GameOfLifeApp.SimulationState.STABLE
+        else:
+            return GameOfLifeApp.SimulationState.CHANGING
+
     def run(self):
         self.running = True
         self.paused = True
@@ -263,7 +281,12 @@ class GameOfLifeApp:
                     self.simulate_map(self.cell_map)
                     self.simulation_step += 1
                     dt_simulation = 0
-                    # TODO: verify after some generations if the game is in a stable/static or empty state (no more changes) (stop the simulation then) or if the world is changing (keep simulating)
+
+                    if self.simulation_step == SIMULATION_STOP_SIGNAL_CHECK_STEP:
+                        state_type = self.SimulationState
+                        match self.determine_simulation_state(self.cell_map):
+                            case state_type.EMPTY | state_type.STABLE:
+                                self.paused = True
             else:
                 dt_simulation = 0
 
