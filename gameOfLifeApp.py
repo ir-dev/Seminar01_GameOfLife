@@ -1,5 +1,7 @@
 from enum import Enum
+import os
 import random
+import numpy as np
 import pygame
 
 from cellMapGenerator import CellMapGenerator, CellMapPreset
@@ -13,6 +15,7 @@ SIMULATION_MAX_SPEED = 1000
 FPS = 60.0
 CELL_SIZE = 10
 CELL_MAP_PRESET_DEFAULT = CellMapPreset.EMPTY
+SERIALIZE_FILE_PATH = os.path.abspath('data/cell_map_save.npy')
 
 
 class GameOfLifeApp:
@@ -131,12 +134,10 @@ class GameOfLifeApp:
                             self.reset(cell_map)
                         # save
                         case pygame.K_s:
-                            # TODO: save game state and use appropriate data structure
-                            pass
+                            self.serialize_state()
                         # load
                         case pygame.K_l:
-                            # TODO: load game state
-                            pass
+                            self.deserialize_state()
                         # decrease step speed (1 means 1 step per 1s)
                         case pygame.K_LEFT:
                             self.simulation_speed = max(SIMULATION_MIN_SPEED, self.simulation_speed - 1)
@@ -261,6 +262,19 @@ class GameOfLifeApp:
             return GameOfLifeApp.SimulationState.STABLE
         else:
             return GameOfLifeApp.SimulationState.CHANGING
+
+    def serialize_state(self):
+        dir = os.path.dirname(SERIALIZE_FILE_PATH)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+        np.save(SERIALIZE_FILE_PATH, self.cell_map)
+        self.paused = True
+
+    def deserialize_state(self):
+        if os.path.exists(SERIALIZE_FILE_PATH):
+            self.reset(np.load(SERIALIZE_FILE_PATH))
+            self.paused = True
 
     def run(self):
         self.running = True
