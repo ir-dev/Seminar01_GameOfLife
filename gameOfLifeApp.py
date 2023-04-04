@@ -15,7 +15,7 @@ SIMULATION_MAX_SPEED = 1000
 FPS = 60.0
 CELL_SIZE = 10
 CELL_MAP_PRESET_DEFAULT = CellMapPreset.EMPTY
-SERIALIZE_FILE_PATH = os.path.abspath('data/cell_map_save.npy')
+SERIALIZE_FILE_PATH = os.path.abspath('data/gol_save.npz')
 
 
 class GameOfLifeApp:
@@ -71,6 +71,14 @@ class GameOfLifeApp:
         # will be drawn in game loop
         self.cell_map_surface = None
         self.simulation_step = 0
+
+    def reset_to_state(self, initial_configuration, configuration, simulation_step, simulation_speed):
+        self.initial_configuration = initial_configuration
+        self.cell_map = configuration
+        # will be drawn in game loop
+        self.cell_map_surface = None
+        self.simulation_step = simulation_step
+        self.simulation_speed = simulation_speed
 
     def process_events(self):
         def is_cell_collision(point):
@@ -267,13 +275,15 @@ class GameOfLifeApp:
         dir = os.path.dirname(SERIALIZE_FILE_PATH)
         if not os.path.exists(dir):
             os.makedirs(dir)
-
-        np.save(SERIALIZE_FILE_PATH, self.cell_map)
+        np.savez_compressed(SERIALIZE_FILE_PATH, initial_conf=self.initial_configuration,
+                            conf=self.cell_map, step=self.simulation_step, speed=self.simulation_speed)
         self.paused = True
 
     def deserialize_state(self):
         if os.path.exists(SERIALIZE_FILE_PATH):
-            self.reset(np.load(SERIALIZE_FILE_PATH))
+            data = np.load(SERIALIZE_FILE_PATH)
+            self.reset_to_state(initial_configuration=data['initial_conf'], configuration=data['conf'],
+                                simulation_step=data['step'], simulation_speed=data['speed'])
             self.paused = True
 
     def run(self):
