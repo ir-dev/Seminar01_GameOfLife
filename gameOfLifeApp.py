@@ -282,8 +282,8 @@ class GameOfLifeApp:
     def deserialize_state(self):
         if os.path.exists(SERIALIZE_FILE_PATH):
             data = np.load(SERIALIZE_FILE_PATH)
-            self.reset_to_state(initial_configuration=data['initial_conf'], configuration=data['conf'],
-                                simulation_step=data['step'], simulation_speed=data['speed'])
+            self.reset_to_state(initial_configuration=data['initial_conf'].tolist(), configuration=data['conf'].tolist(),
+                                simulation_step=int(data['step']), simulation_speed=int(data['speed']))
             self.paused = True
 
     def run(self):
